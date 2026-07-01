@@ -75,10 +75,20 @@ class QuestionGeneratorAgent:
 Do NOT generate any of these questions again:
 {json.dumps(existing_texts, ensure_ascii=False)}
 """
+        # تحديد الجزء الخاص بالفورمات بناءً على النوع المطلوب فقط لمنع التشتت
+        format_instruction = ""
+        if q_type == "MCQ":
+            format_instruction = "MCQ format: {'question': 'text', 'options': ['option1', 'option2', 'option3', 'option4'], 'correct_answer': 'the correct option'}"
+        elif q_type == "True/False":
+            format_instruction = "True/False format: {'question': 'text', 'options': ['صح', 'خطأ'], 'correct_answer': 'صح' or 'خطأ'}"
+        elif q_type == "Complete":
+            format_instruction = "Complete format: {'question': 'text with ___', 'correct_answer': 'the missing word'}. DO NOT include an 'options' field."
+
         prompt = f"""
 You are an AI teacher for children.
 
-Generate {num_q} {q_type} questions from the following transcript.
+Generate exactly {num_q} questions from the following transcript.
+The question type MUST BE ONLY: {q_type}
 Difficulty level: {difficulty}
 
 Rules:
@@ -88,16 +98,16 @@ Rules:
 - If difficulty is hard, questions must require thinking.
 - Cover different parts of the transcript, not just one section.
 {avoid_section}
-Question formats (follow exactly):
-1) MCQ: question, options (array of exactly 4), correct_answer
-2) True/False: question, options=["صح","خطأ"], correct_answer ("صح" or "خطأ")
-3) Complete: question (with "___"), correct_answer. NO options field.
+
+Follow this JSON structure exactly:
+{format_instruction}
 
 Return ONLY a valid JSON array. No text before or after.
 
 Transcript:
 {smart_text}
 """
+
         content = safe_llm_call([{"role": "user", "content": prompt}], temperature=0.7)
 
         # تنظيف الـ markdown بطريقة أقوى
