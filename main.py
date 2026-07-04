@@ -162,19 +162,13 @@ def generate(req: GenerateRequest):
     if not questions:
         raise HTTPException(status_code=500, detail="فشل توليد الأسئلة، حاول تاني")
 
-    # حفظ الكويز بعد التوليد
-    save_quiz_file(
-        req.lesson_name,
-        req.difficulty,
-        req.q_type,
-        questions
-    )
+    save_quiz_file(req.lesson_name, req.difficulty, req.q_type, questions)
 
     return {
         "lesson_name": req.lesson_name,
-        "questions": questions,
-        "count": len(questions),
-        "saved": True
+        "questions":   questions,
+        "count":       len(questions),
+        "saved":       True
     }
 
 
